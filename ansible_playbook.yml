@@ -1,0 +1,65 @@
+- name: Example playbook
+  hosts: all
+  remote_user: ec2-user
+
+  tasks:
+    - name: apt update_cache
+      become: true 
+      apt: 
+        update_cache: yes
+
+      
+    - name: install Nginx
+      become: true 
+      apt:
+        name: nginx
+        state: present
+      notify: restart Nginx
+            
+      
+    - name: update default nginx config
+      become: true
+      template:
+        src: default
+        dest: /etc/nginx/sites-available/default
+      notify: restart Nginx
+
+    - name: install node.js 22
+      become: true
+      apt:
+        name: nodejs
+        state: present
+    
+    - name: install npm
+      become: true
+      apt:
+        name: npm
+        state: present
+    
+    
+    - name: install pm2 globally
+      become: true
+      npm:
+        name: pm2
+        global: yes
+
+    - name: start app using pm2
+      become: true
+      shell: |
+        git clone https://github.com/soheltanvir925/Deployment_by_github.git
+        cd /home/ubuntu/Deployment_by_github
+        pm2 delete myapp || true
+        pm2 start "npm start" --name="myapp" 
+        pm2 save
+
+  handlers:
+    - name: restart Nginx
+      become: true 
+      service:
+        name: nginx
+        state: restarted 
+
+
+
+
+  
